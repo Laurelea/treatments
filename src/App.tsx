@@ -1,26 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import React from 'react'
+import Header from './containers/header'
+import { Route, Switch } from "react-router-dom";
+// import ShowTemplates from './partials/show-templates'
+// import ShowTreatments from './partials/show-treatments'
+import { ShowComponents } from './partials/show-components'
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <div id='treatment' className='mainPage' >
+        <header className="header mainElement">
+          <Header/>
+        </header>
+        <div className="center mainElement">
+          <Switch>
+            <Route path="/" exact render={() =>
+                <React.Fragment>
+                  <h1>Treatments Home Page</h1>
+                  <p id="welcome">
+                    Тут будут обработки
+                  </p>
+                </React.Fragment>
+            }/>
+            {/*<Route path="/show-templates" exact component={ShowTemplates}/>*/}
+            {/*<Route path="/show-treatments" exact component={ShowTreatments}/>*/}
+            <Route path="/show-components" exact component={ShowComponents as any}/>
+            <Route render={() => <h2>404 not found</h2>}/>
+          </Switch>
+        </div>
+      </div>
   );
 }
 
-export default App;
+export default App
