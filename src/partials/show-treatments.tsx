@@ -3,52 +3,70 @@ import React, { useState, useEffect } from 'react'
 import axios from "axios";
 import { API_URL } from "../config";
 
-interface IComponent {
+interface ITreatment {
     id: number,
-    name: string,
-    substance: string,
+    date_start: string,
+    status: string,
+    period_started: boolean,
+    period_ended: boolean,
+    dates_to_do: Array<string> | undefined,
+    dates_done: Array<string> | undefined,
+    number_done: number,
+    date_create: string,
+    plant: string,
+    type: string,
+    purpose: string,
+    components: Array<string>
+    phase_start: string,
+    phase_end: string,
+    frequency: number,
+    treatment_gap: number | null,
+    special_condition: string,
 }
 
-interface IShowComponents {
-    components: Array<IComponent> | undefined,
+interface IShowTreatments {
+    treatments: Array<ITreatment> | undefined,
 }
 
-export const ShowComponents =  async () => {
-    const [state, setState] =  useState<IShowComponents>({
-        components: undefined
+export const ShowTreatments =  () => {
+    console.log('ShowTreatments')
+    const [state, setState] =  useState<IShowTreatments>({
+        treatments: undefined
     })
     useEffect(() => {
-        axios.post(`${API_URL}/show-components`, {})
+        axios.get(`${API_URL}/show-treatments`, {})
             .then(response => {
-                console.info("show-components post.response.data: ", response.data);
-                if (response.data.success) {
+                console.info("show-treatments post.response.data: ", response.data);
+                if (response.data) {
                     setState({
                         ...state,
-                        components: response.data
+                        treatments: response.data
                     });
                 }
-                return response.data.message
+                // return response.data.message
             })
-            .then(message => {
-                window.alert(message)
-            })
+            // .then(message => {
+            //     window.alert(message)
+            // })
             .catch(error => {
                 console.error(error);
             })
     }, [])
-
     return (
         <div className='mainElement'>
-            {state.components ?
-                state.components.map((c: IComponent) => (
-                        <div className='component'>
+            {state.treatments ?
+                state.treatments.map((c: ITreatment) => (
+                        <div className='component' key={c.id}>
                             <div><p>'ID:'</p>{c.id}</div>
-                            <div><p>'Name:'</p>{c.name}</div>
-                            <div><p>'Substance:'</p>{c.substance}</div>
+                            <div><p>'Plant:'</p>{c.plant}</div>
+                            <div><p>'Contents:'</p>{c.components.join(', ')}</div>
                         </div>
                     ),
                 ) : 'no components found'}
         </div>
+        // <React.Fragment>
+        //
+        // </React.Fragment>
     )
 }
 

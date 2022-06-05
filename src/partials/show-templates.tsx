@@ -3,48 +3,52 @@ import React, { useState, useEffect } from 'react'
 import axios from "axios";
 import { API_URL } from "../config";
 
-interface IComponent {
+interface ITemplate {
     id: number,
-    name: string,
-    substance: string,
+    plant: string,
+    purpose: string,
+    contents: Array<string>,
+    phase_begin: string,
+    phase_end: string,
+    frequency: number,
+    treatment_gap: number | null,
+    special_condition: string | null,
+    type: string,
 }
 
-interface IShowComponents {
-    components: Array<IComponent> | undefined,
+interface IShowTemplates {
+    templates: Array<ITemplate> | undefined,
 }
 
-export const ShowComponents =  async () => {
-    const [state, setState] =  useState<IShowComponents>({
-        components: undefined
+const ShowTemplates = () => {
+    const [state, setState] =  useState<IShowTemplates>({
+        templates: undefined
     })
     useEffect(() => {
-        axios.post(`${API_URL}/show-components`, {})
+        axios.get(`${API_URL}/show-templates`, {})
             .then(response => {
-                console.info("show-components post.response.data: ", response.data);
-                if (response.data.success) {
+                console.info("show-treatments post.response.data: ", response.data);
+                if (response.data) {
                     setState({
                         ...state,
-                        components: response.data
+                        templates: response.data
                     });
                 }
-                return response.data.message
-            })
-            .then(message => {
-                window.alert(message)
             })
             .catch(error => {
                 console.error(error);
             })
     }, [])
-
     return (
         <div className='mainElement'>
-            {state.components ?
-                state.components.map((c: IComponent) => (
-                        <div className='component'>
+            {state.templates ?
+                state.templates.map((c: ITemplate) => (
+                        <div className='component' key={c.id}>
                             <div><p>'ID:'</p>{c.id}</div>
-                            <div><p>'Name:'</p>{c.name}</div>
-                            <div><p>'Substance:'</p>{c.substance}</div>
+                            <div><p>'Plant:'</p>{c.plant}</div>
+                            <div><p>'Contents:'</p>{c.contents}</div>
+                            <div><p>'Phase begin:'</p>{c.phase_begin}</div>
+                            <div><p>'Phase end:'</p>{c.phase_end}</div>
                         </div>
                     ),
                 ) : 'no components found'}
@@ -52,3 +56,4 @@ export const ShowComponents =  async () => {
     )
 }
 
+export default ShowTemplates
