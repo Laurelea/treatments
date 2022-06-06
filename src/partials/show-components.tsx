@@ -25,14 +25,17 @@ interface IShowComponents {
 export const ShowComponents =  () => {
     const getComponents = async () => {
         console.log('getComponents triggered')
-        await axios.get(`${API_URL}/show-components`, {})
-            .then(response => {
+        return await axios.get(`${API_URL}/show-components`, {})
+            .then( async response => {
                 console.info("show-components post.response.data: ", response.data);
                 if (response.data) {
-                    setState({
-                        ...state,
-                        components: response.data
-                    });
+                    // setState({
+                    //     ...state,
+                    //     components: response.data
+                    // });
+                    return await response.data
+                } else {
+                    throw new Error('getComponents: no data in response')
                 }
             })
             .catch(error => {
@@ -41,14 +44,13 @@ export const ShowComponents =  () => {
     }
     const getSubstances = async () => {
         console.log('getSubstances triggered')
-        await axios.get(`${API_URL}/show-substances`, {})
-            .then(response => {
+        return await axios.get(`${API_URL}/show-substances`, {})
+            .then(async response => {
                 console.info("show-substances post.response.data: ", response.data);
                 if (response.data) {
-                    setState({
-                        ...state,
-                        substances: response.data
-                    });
+                    return await response.data
+                } else {
+                    throw new Error('getSubstances: no data in response')
                 }
             })
             .catch(error => {
@@ -117,10 +119,31 @@ export const ShowComponents =  () => {
         currentSubstance: undefined,
     })
     useEffect(() => {
-        getComponents()
-    }, [])
-    useEffect(() => {
+        let substances: Array<ISubstance>
+        let components: Array<IComponent>
         getSubstances()
+            .then(data => {
+                console.log('useEffect getSubstances', data)
+                if (data) {
+                    substances = data
+                }
+            })
+            .then(() => {
+                getComponents()
+                    .then(data => {
+                        console.log('useEffect getComponents', data)
+                        if (data) {
+                            components = data
+                        }
+                    })
+                    .then(() => {
+                        setState({
+                            ...state,
+                            substances,
+                            components
+                        });
+                    })
+            })
     }, [])
     return (
         <div className='mainElement'>
