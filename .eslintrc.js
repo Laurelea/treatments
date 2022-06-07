@@ -9,9 +9,6 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
-    "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:import/typescript",
   ],
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
@@ -27,11 +24,6 @@ module.exports = {
     ],
     'object-curly-spacing': 'off',
     '@typescript-eslint/object-curly-spacing': ['error', 'always'],
-    // 'no-console': ['error', { allow: ['warning', 'error', 'info'] }]
+    'no-console': ['error', { allow: ['warning', 'error', 'info'] }]
   },
-  settings: {
-    'import/resolver': {
-      "typescript": {}
-    },
-  }
 };
