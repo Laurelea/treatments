@@ -118,9 +118,15 @@ export const ShowComponents =  () => {
         substances: undefined,
         currentSubstance: undefined,
     })
+    const asd = async () => {
+        1 = await getSubstances();
+        2 = await getSubstances();
+        setState(1, 2)
+    }
     useEffect(() => {
         let substances: Array<ISubstance>
         let components: Array<IComponent>
+        asd()
         getSubstances()
             .then(data => {
                 console.log('useEffect getSubstances', data)
