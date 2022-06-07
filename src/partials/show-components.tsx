@@ -1,7 +1,8 @@
 import '../App.css';
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import axios from "axios";
 import { API_URL } from "../config";
+import api from '../utils/api'
 
 interface IComponent {
     id: number,
@@ -20,75 +21,50 @@ interface IShowComponents {
     showAddSubstance: boolean,
     substances: Array<ISubstance> | undefined,
     currentSubstance: number | undefined,
+    newSubstanceName: string | undefined,
 }
 
 export const ShowComponents =  () => {
-    const getComponents = async () => {
-        console.log('getComponents triggered')
-        return await axios.get(`${API_URL}/show-components`, {})
-            .then( async response => {
-                console.info("show-components post.response.data: ", response.data);
-                if (response.data) {
-                    // setState({
-                    //     ...state,
-                    //     components: response.data
-                    // });
-                    return await response.data
-                } else {
-                    throw new Error('getComponents: no data in response')
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
-    const getSubstances = async () => {
-        console.log('getSubstances triggered')
-        return await axios.get(`${API_URL}/show-substances`, {})
-            .then(async response => {
-                console.info("show-substances post.response.data: ", response.data);
-                if (response.data) {
-                    return await response.data
-                } else {
-                    throw new Error('getSubstances: no data in response')
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
+    const [state, setState] =  useState<IShowComponents>({
+        components: undefined,
+        showAddForm: false,
+        showAddSubstance: false,
+        substances: undefined,
+        currentSubstance: undefined,
+        newSubstanceName: undefined,
+    })
+    const handleNewSubstance = async (event: ChangeEvent<HTMLInputElement>) => {
+        setState({ ...state, newSubstanceName: event.target.value ? event.target.value.toLowerCase() : undefined });
     }
     const addComponent = () => {
         console.info('add comp')
     }
-    const addSubstance = async (event: React.FormEvent<HTMLFormElement>) => {
-        const formData = new FormData(event.currentTarget);
+    const addSubstance = async (event: FormEvent) => {
         event.preventDefault();
-        console.info('add substance:', event.currentTarget.getAttribute('name'))
-        console.info('add substance 2:', formData)
-        // console.info('add substance:', event.currentTarget)
-        const data = {
-            name: event.currentTarget.name,
+        console.info('add substance:', state.newSubstanceName)
+        if (!state.newSubstanceName) {
+            window.alert('не введено имя вещества')
+            return
+        } else {
+            await axios.post(`${API_URL}/add-substance`, { name: state.newSubstanceName })
+                .then(response => {
+                    if (response.data.error) {
+                        return response.data.error
+                    }
+                    if (response.data) {
+                        getSubstances()
+                        return 'success'
+                    }
+                })
+                .then(message => {
+                    window.alert(message)
+                })
+                .catch(error => {
+                    console.info(error);
+                })
         }
-        event.currentTarget.reset();
-        await axios.post(`${API_URL}/add-substance`, data)
-            .then(response => {
-                console.log("addSubstance  post.response.data: ", response.data);
-                if (response.data.success) {
-                    console.log('addSubstance success')
-                    window.alert(response.data.message)
-                    setState({
-                        ...state,
-                        showAddSubstance: !showAddSubstance
-                    })
-                }
-                return response.data.message
-            })
-            .then(message => {
-                window.alert(message)
-            })
-            .catch(error => {
-                console.log(error);
-            })
+
+
     }
     const selectSubstance = (e: React.ChangeEvent<HTMLSelectElement>) => {
         console.info('selectSubstance')
@@ -111,45 +87,58 @@ export const ShowComponents =  () => {
         });
         console.info('show comp')
     }
-    const [state, setState] =  useState<IShowComponents>({
-        components: undefined,
-        showAddForm: false,
-        showAddSubstance: false,
-        substances: undefined,
-        currentSubstance: undefined,
-    })
-    const asd = async () => {
-        1 = await getSubstances();
-        2 = await getSubstances();
-        setState(1, 2)
+    const getSubstances = async () => {
+        const substances = await api('get', 'show-substances');
+        setState({
+            ...state,
+            substances,
+        })
     }
+    const getComponents = async () => {
+        const components = await api('get', 'show-components');
+        setState({
+            ...state,
+            components,
+        })
+    }
+
+    // const getInitialData = async () => {
+    //     const substances = await api('get', 'show-substances');
+    //     const components = await api('get', 'show-components');
+    //     setState({
+    //         ...state,
+    //         substances,
+    //         components
+    //     })
+    // }
     useEffect(() => {
-        let substances: Array<ISubstance>
-        let components: Array<IComponent>
-        asd()
+        // let substances: Array<ISubstance>
+        // let components: Array<IComponent>
         getSubstances()
-            .then(data => {
-                console.log('useEffect getSubstances', data)
-                if (data) {
-                    substances = data
-                }
-            })
-            .then(() => {
-                getComponents()
-                    .then(data => {
-                        console.log('useEffect getComponents', data)
-                        if (data) {
-                            components = data
-                        }
-                    })
-                    .then(() => {
-                        setState({
-                            ...state,
-                            substances,
-                            components
-                        });
-                    })
-            })
+        getComponents()
+        // getSubstances()
+        //     .then(data => {
+        //         console.log('useEffect getSubstances', data)
+        //         if (data) {
+        //             substances = data
+        //         }
+        //     })
+        //     .then(() => {
+        //         getComponents()
+        //             .then(data => {
+        //                 console.log('useEffect getComponents', data)
+        //                 if (data) {
+        //                     components = data
+        //                 }
+        //             })
+        //             .then(() => {
+        //                 setState({
+        //                     ...state,
+        //                     substances,
+        //                     components
+        //                 });
+        //             })
+        //     })
     }, [])
     return (
         <div className='mainElement'>
@@ -190,7 +179,7 @@ export const ShowComponents =  () => {
                     <label className='whole-line'>
                         Название вещества
                     </label>
-                    <input type='text' placeholder='Добавить новое' name='name' required autoComplete="on" className='whole-line add-input'/>
+                    <input type='text' placeholder='Добавить новое' name='name' required autoComplete="on" className='whole-line add-input' onChange={handleNewSubstance}/>
                     <button  type='submit' className='add-button'>Добавить</button>
                 </form> :
                 <button onClick={showAddSubstance}>Добавить действующее вещество</button>
