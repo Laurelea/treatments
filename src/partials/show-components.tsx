@@ -1,7 +1,5 @@
 import '../App.css';
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
-import axios from "axios";
-import { API_URL } from "../config";
 import api from '../utils/api'
 
 interface IComponent {
@@ -46,25 +44,23 @@ export const ShowComponents =  () => {
             window.alert('не введено имя вещества')
             return
         } else {
-            await axios.post(`${API_URL}/add-substance`, { name: state.newSubstanceName })
-                .then(response => {
-                    if (response.data.error) {
-                        return response.data.error
+            await api('post', 'add-substance', { name: state.newSubstanceName })
+                .then(async res => {
+                    const { success, message } = await res
+                    if (success) {
+                        const substances = await api('get', 'show-substances');
+                        setState({
+                            ...state,
+                            substances,
+                            showAddSubstance: !state.showAddSubstance
+                        })
                     }
-                    if (response.data) {
-                        getSubstances()
-                        return 'success'
-                    }
-                })
-                .then(message => {
-                    window.alert(message)
+                    window.alert(JSON.stringify(message))
                 })
                 .catch(error => {
                     console.info(error);
                 })
         }
-
-
     }
     const selectSubstance = (e: React.ChangeEvent<HTMLSelectElement>) => {
         console.info('selectSubstance')
@@ -89,6 +85,7 @@ export const ShowComponents =  () => {
     }
     const getSubstances = async () => {
         const substances = await api('get', 'show-substances');
+        console.info('getSubstances data', substances)
         setState({
             ...state,
             substances,
@@ -101,45 +98,20 @@ export const ShowComponents =  () => {
             components,
         })
     }
+    const getInitialData = async () => {
+        const components = await api('get', 'show-components');
+        const substances = await api('get', 'show-substances');
+        setState({
+            ...state,
+            components,
+            substances
+        })
+    }
 
-    // const getInitialData = async () => {
-    //     const substances = await api('get', 'show-substances');
-    //     const components = await api('get', 'show-components');
-    //     setState({
-    //         ...state,
-    //         substances,
-    //         components
-    //     })
-    // }
     useEffect(() => {
-        // let substances: Array<ISubstance>
-        // let components: Array<IComponent>
-        getSubstances()
-        getComponents()
-        // getSubstances()
-        //     .then(data => {
-        //         console.log('useEffect getSubstances', data)
-        //         if (data) {
-        //             substances = data
-        //         }
-        //     })
-        //     .then(() => {
-        //         getComponents()
-        //             .then(data => {
-        //                 console.log('useEffect getComponents', data)
-        //                 if (data) {
-        //                     components = data
-        //                 }
-        //             })
-        //             .then(() => {
-        //                 setState({
-        //                     ...state,
-        //                     substances,
-        //                     components
-        //                 });
-        //             })
-        //     })
+        getInitialData()
     }, [])
+
     return (
         <div className='mainElement'>
             {state.showAddForm ?

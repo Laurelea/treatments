@@ -1,7 +1,8 @@
 import { API_URL } from '../config';
 import axios from "axios";
+import { IDictionary } from "src/utils/types";
 
-const api = async (method: string, path: string) => {
+const api = async (method: string, path: string, data?: IDictionary<any>) => {
     console.info('api triggered:', method, path)
     if (method == 'get') {
         return await axios.get(`${API_URL}/${path}`, {})
@@ -15,6 +16,15 @@ const api = async (method: string, path: string) => {
             })
             .catch(error => {
                 console.error(error);
+            })
+    } else if (method == 'post') {
+        return await axios.post(`${API_URL}/${path}`, data)
+            .then(async response => {
+                return await response.data
+            })
+            .catch(error => {
+                console.error(error);
+                return { success: false, message: error }
             })
     }
 }
