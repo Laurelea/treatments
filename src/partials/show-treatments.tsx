@@ -29,7 +29,7 @@ interface IShowTreatments {
 }
 
 export const ShowTreatments =  () => {
-    console.log('ShowTreatments')
+    console.info('ShowTreatments')
     const [state, setState] =  useState<IShowTreatments>({
         treatments: undefined
     })
