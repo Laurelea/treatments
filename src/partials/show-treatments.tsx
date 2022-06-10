@@ -43,11 +43,7 @@ export const ShowTreatments =  () => {
                         treatments: response.data
                     });
                 }
-                // return response.data.message
             })
-            // .then(message => {
-            //     window.alert(message)
-            // })
             .catch(error => {
                 console.error(error);
             })
@@ -64,9 +60,6 @@ export const ShowTreatments =  () => {
                     ),
                 ) : 'no components found'}
         </div>
-        // <React.Fragment>
-        //
-        // </React.Fragment>
     )
 }
 

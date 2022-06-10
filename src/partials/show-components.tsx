@@ -52,14 +52,12 @@ export const ShowComponents =  () => {
                         setState({
                             ...state,
                             components,
-                            // showAddForm: !state.showAddForm,
                             currentSubstance: undefined,
                             newComponentName: '',
                         })
                     } else {
                         setState({
                             ...state,
-                            // showAddForm: !state.showAddForm,
                             currentSubstance: undefined,
                             newComponentName: '',
                         })
@@ -87,9 +85,7 @@ export const ShowComponents =  () => {
                             ...state,
                             substances,
                             newSubstanceName: '',
-                            // showAddSubstance: !state.showAddSubstance
                         })
-                        // event.currentTarget.reset();
                     }
                     window.alert(JSON.stringify(message))
                 })
