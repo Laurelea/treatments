@@ -2,38 +2,7 @@ import '../App.css';
 import React, { useState, useEffect, FormEvent } from 'react'
 import { sortBy } from "src/utils/funcs";
 import api from '../utils/api'
-import { IComponent } from '../utils/types'
-
-
-interface ITemplate {
-    id: number,
-    plant: string,
-    purpose: string,
-    contents: Array<string>,
-    phase_start: string,
-    phase_end: string,
-    frequency: number,
-    treatment_gap: number | null,
-    special_condition: string | null,
-    apply_type: string,
-    type: string,
-    dosage: string,
-    volume: string,
-}
-
-interface IProduct {
-    id: number,
-    product_name: string,
-    yeartype: number,
-    rootstock: boolean,
-    soil: string,
-    watering : string,
-    depth_min: number,
-    depth_max: number,
-    sun: string,
-    category: number,
-}
-
+import { IComponent, ITemplate, IProduct } from '../utils/types'
 
 interface IShowTemplates {
     templates: Array<ITemplate> | undefined,

@@ -42,7 +42,7 @@
   width:100%;
   height: 100%;
 }
-.add-component-form, .add-substance-form {
+.add-component-form, .add-substance-form, .add-treatment-form, .add-phase-form {
   /*margin: 10px;*/
   grid-gap: 10px;
   display: grid;

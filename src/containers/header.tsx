@@ -14,6 +14,7 @@ const Newheader = () =>  {
                         <li className="active"><NavLink to="/show-templates" exact>Шаблоны</NavLink></li>
                         <li className="active"><NavLink to="/show-treatments" exact>Обработки</NavLink></li>
                         <li className="active"><NavLink to="/show-components" exact>Компоненты</NavLink></li>
+                        <li className="active"><NavLink to="/show-phases" exact>Фазы</NavLink></li>
                     </ul>
                 </div>
             </nav>
