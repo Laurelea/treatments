@@ -2,12 +2,7 @@ import '../App.css';
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import api from '../utils/api'
 import { sortBy } from '../utils/funcs'
-
-interface IComponent {
-    id: number,
-    name: string,
-    substance: string,
-}
+import { IComponent } from '../utils/types'
 
 interface ISubstance {
     id: number,
