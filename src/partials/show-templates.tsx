@@ -331,12 +331,12 @@ const ShowTemplates = () => {
             </div>
             <div className='container table-container'>
 
-            {state.templates ?
+            {state.templates && state.components ?
                 state.templates.map((c: ITemplate) => (
                         <div className='component' key={c.id}>
                             <div><p>'ID:'</p>{c.id}</div>
                             <div><p>'Plant:'</p>{c.plant}</div>
-                            <div><p>'Contents:'</p>{c.contents.join(', ')}</div>
+                            <div><p>'Contents:'</p>{c.contents.map((c: number) => state.components!.filter((cm: IComponent) => cm.id == c)[0].name).join(', ')}</div>
                             <div><p>'Phase begin:'</p>{c.phase_start}</div>
                             <div><p>'Phase end:'</p>{c.phase_end}</div>
                         </div>

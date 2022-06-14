@@ -12,7 +12,7 @@ export interface ITemplate {
     id: number,
     plant: string,
     purpose: string,
-    contents: Array<string>,
+    contents: Array<number>,
     phase_start: string,
     phase_end: string,
     frequency: number,
