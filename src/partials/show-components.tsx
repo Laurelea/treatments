@@ -286,7 +286,7 @@ export const ShowComponents = () => {
                     }
                 </Grid>
                 <Grid container className={classes.itemsContainer}>
-                    {state.components ?
+                    {state.components && state.components.length ?
                             state.components.map((c: IComponent) => (
                                 <div className='component' key={c.id}>
                                     <div><p>'ID:'</p>{c.id}</div>

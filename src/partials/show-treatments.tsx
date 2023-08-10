@@ -7,15 +7,15 @@ interface ITreatment {
     id: number,
     date_start: string,
     status: string,
-    period_started: boolean,
-    period_ended: boolean,
+    date_started: boolean,
+    date_finished: boolean,
     dates_to_do: Array<string> | undefined,
     dates_done: Array<string> | undefined,
     number_done: number,
     date_create: string,
     plant: string,
     type: string,
-    purpose: string,
+    // purpose: string,
     components: Array<string>
     phase_start: string,
     phase_end: string,
@@ -43,18 +43,14 @@ export const ShowTreatments =  () => {
                         treatments: response.data
                     });
                 }
-                // return response.data.message
             })
-            // .then(message => {
-            //     window.alert(message)
-            // })
             .catch(error => {
                 console.error(error);
             })
     }, [])
     return (
         <div className='mainElement'>
-            {state.treatments ?
+            {state.treatments && state.treatments.length ?
                 state.treatments.map((c: ITreatment) => (
                         <div className='component' key={c.id}>
                             <div><p>'ID:'</p>{c.id}</div>
@@ -62,11 +58,8 @@ export const ShowTreatments =  () => {
                             <div><p>'Contents:'</p>{c.components.join(', ')}</div>
                         </div>
                     ),
-                ) : 'no components found'}
+                ) : 'no treatments found'}
         </div>
-        // <React.Fragment>
-        //
-        // </React.Fragment>
     )
 }
 
