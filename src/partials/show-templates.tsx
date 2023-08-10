@@ -62,8 +62,18 @@ const useStyles = makeStyles((theme: Theme) =>
             border: '2px solid black',
             // alignItems: "flex-start",
             // justifyContent: "space-between",
-            display: 'flex',
+            display: 'grid',
             flexDirection: 'column',
+            '& button': {
+                marginBottom: theme.spacing(2),
+                marginRight: theme.spacing(2),
+                display: 'inline-block',
+            },
+            '& label': {
+                marginBottom: theme.spacing(2),
+                marginRight: theme.spacing(2),
+                display: 'inline-block',
+            },
         },
         formContainer: {
             padding: theme.spacing(0, 2),
@@ -81,6 +91,7 @@ const useStyles = makeStyles((theme: Theme) =>
         submit: {
             marginTop: theme.spacing(2),
             padding: theme.spacing(2, 3),
+            width: 150
         },
         checkbox: {
             marginTop: theme.spacing(2),
@@ -95,6 +106,7 @@ const useStyles = makeStyles((theme: Theme) =>
             backgroundColor: theme.palette.secondary.main,
             color: theme.palette.background.default,
         },
+
     }),
 );
 
@@ -149,7 +161,7 @@ const ShowTemplates = () => {
         <div className={classes.root}>
             <Container>
                 {state.showAddTemplate ?
-                    <Grid container className={classes.form} component="form" onSubmit={addTemplate}>
+                    <Grid className={classes.form} component="form" onSubmit={addTemplate}>
                         {/*<h2 className='whole-line'>*/}
                         {/*    Добавить новый шаблон обработки*/}
                         {/*</h2>*/}
@@ -190,19 +202,29 @@ const ShowTemplates = () => {
                         </Button>
                     </Grid>
                     :
-                    <button onClick={() => setState({ ...state, showAddTemplate: true })}>Добавить шаблон</button>
+                    <Button
+                        onClick={() => setState({ ...state, showAddTemplate: true })}
+                        variant="contained"
+                        color="primary"
+                        // type="submit"
+                        // disabled={state.isLoading}
+                        className={classes.submit}
+                    >
+                        {/*{state.isLoading ? <CircularProgress size={14} color="secondary" /> : 'Отправить'}*/}
+                        Добавить шаблон
+                    </Button>
                 }
                 <Grid container className={classes.itemsContainer}>
                     {state.templates && state.templates.length ?
                         state.templates.map((c: ITemplate) => (
-                                <div className='component' key={c.id}>
-                                    <div><p>'ID:'</p>{c.id}</div>
-                                    <div><p>'Name:'</p>{c.template_name}</div>
-                                    <div><p>'Plant:'</p>{c.plant_name}</div>
-                                    <div><p>'Contents:'</p>{c.contents}</div>
-                                    <div><p>'Phase begin:'</p>{c.phase_start}</div>
-                                    <div><p>'Phase end:'</p>{c.phase_end}</div>
-                                </div>
+                            <div className='component' key={c.id}>
+                                <div><p>'ID:'</p>{c.id}</div>
+                                <div><p>'Name:'</p>{c.template_name}</div>
+                                <div><p>'Plant:'</p>{c.plant_name}</div>
+                                <div><p>'Contents:'</p>{c.contents}</div>
+                                <div><p>'Phase begin:'</p>{c.phase_start}</div>
+                                <div><p>'Phase end:'</p>{c.phase_end}</div>
+                            </div>
                             ),
                         ) : 'no templates found'}
                 </Grid>
