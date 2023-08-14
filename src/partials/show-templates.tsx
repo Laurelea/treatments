@@ -5,25 +5,28 @@ import { API_URL } from "../config";
 import Grid from '@mui/material/Grid';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import { TextField, Typography } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Container from '@mui/material/Container';
 import { createStyles, makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles';
 import api from "src/utils/api";
+import { IComponent } from "src/utils/types";
+
 
 interface ITemplate {
     id?: number,
     template_name?: string,
     plant_id?: number,
     plant_name?: string,
-    contents: Array<string>,
+    contents: number[],
     phase_start: string,
     phase_end: string,
-    frequency: number,
+    frequency: number | null,
     treatment_gap: number | null,
     special_condition: string | null,
     apply_type: string,
+    type: string,
 }
 
 interface IPlant {
@@ -38,11 +41,15 @@ interface IPlant {
     sun: string,
 }
 
-interface ITemplates {
+interface IShowTemplates {
     templates: ITemplate[],
     showAddTemplate: boolean,
     newTemplate: ITemplate | null,
     plants: IPlant[],
+    phases: string[],
+    treatment_types: string[],
+    treatment_apply_types: string[],
+    components: IComponent[],
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -83,14 +90,17 @@ const useStyles = makeStyles((theme: Theme) =>
             padding: theme.spacing(0, 2),
             border: '2px solid red',
         },
+        header: {
+            padding: theme.spacing(2),
+        },
         textField: {
             width: 300,
             marginRight: theme.spacing(2),
             border: '2px solid pink',
         },
         submit: {
-            marginTop: theme.spacing(2),
-            padding: theme.spacing(2, 3),
+            marginTop: theme.spacing(5),
+            padding: theme.spacing(3, 3),
             width: 150
         },
         checkbox: {
@@ -113,25 +123,47 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const ShowTemplates = () => {
     const classes = useStyles();
-    const [state, setState] =  useState<ITemplates>({
+    const [state, setState] =  useState<IShowTemplates>({
         templates: [],
         showAddTemplate: false,
-        newTemplate: null,
-        plants: []
+        newTemplate: {
+            contents: [],
+            phase_start: '',
+            phase_end: '',
+            frequency: null,
+            treatment_gap: null,
+            special_condition: null,
+            apply_type: '',
+            type: '',
+        },
+        plants: [],
+        phases: [],
+        treatment_types: [],
+        treatment_apply_types: [],
+        components: [],
     })
 
     const getInitialData = async () => {
         const templates = await api('get', 'show-templates');
         const plants = await api('get', 'get-plants');
+        const phases = await api('get', 'get-phases');
+        const treatment_types = await api('get', 'get-treatment-types');
+        const treatment_apply_types = await api('get', 'get-treatment-apply-types');
+        const components = await api('get', 'show-components');
+        // console.info(127, phases)
         setState({
             ...state,
             templates,
-            plants: plants.sort((a:IPlant, b:IPlant) => (
+            plants: plants && plants.sort((a:IPlant, b:IPlant) => (
                 a.plant_name > b.plant_name ?
                     1 :
                     b.plant_name > a.plant_name ?
                         -1 : 0
             )),
+            phases,
+            treatment_types,
+            treatment_apply_types,
+            components
         })
     }
 
@@ -149,12 +181,13 @@ const ShowTemplates = () => {
 
     const handleChange = (name: keyof ITemplate) => (event: ChangeEvent<HTMLInputElement>) => {
         const { value } = event.target;
+        console.info(175, value)
         setState({
             ...state,
             newTemplate: {
                 ...state.newTemplate,
                 [name]: value,
-            } as ITemplate,
+            } as ITemplate
         });
     }
     return (
@@ -162,9 +195,7 @@ const ShowTemplates = () => {
             <Container>
                 {state.showAddTemplate ?
                     <Grid className={classes.form} component="form" onSubmit={addTemplate}>
-                        {/*<h2 className='whole-line'>*/}
-                        {/*    Добавить новый шаблон обработки*/}
-                        {/*</h2>*/}
+                        <Typography component="span" variant="h5" className={classes.header}>Добавить новый шаблон обработки</Typography>
                         <TextField
                             id="template-name"
                             label="Название шаблона"
@@ -178,18 +209,92 @@ const ShowTemplates = () => {
                             select
                             id="select-plant"
                             label="Растение"
-                            value={state.newTemplate ? state.newTemplate.plant_id: null}
+                            value={state.newTemplate && state.newTemplate.plant_id || 0}
                             onChange={handleChange('plant_id')}
                             className={classes.textField}
                             margin="normal"
                             variant="outlined"
                             SelectProps={{ multiple: false }}
-                            // autoFocus
                         >
                             {state.plants && state.plants.map((item: IPlant) => (
                                 <MenuItem key={item.id} value={item.id}>{item.plant_name}</MenuItem>
                             )) || []}
                         </TextField>
+                        <TextField
+                            select
+                            id="select-phase"
+                            label="Фаза начала"
+                            value={state.newTemplate && state.newTemplate.phase_start || ''}
+                            onChange={handleChange('phase_start')}
+                            className={classes.textField}
+                            margin="normal"
+                            variant="outlined"
+                            SelectProps={{ multiple: false }}
+                        >
+                            {state.phases && state.phases.map((item: string) => (
+                                <MenuItem key={item} value={item}>{item}</MenuItem>
+                            )) || []}
+                        </TextField>
+                        {/*<TextField*/}
+                        {/*    select*/}
+                        {/*    id="select-phase"*/}
+                        {/*    label="Фаза окончания"*/}
+                        {/*    value={state.newTemplate ? state.newTemplate.phase_end: null}*/}
+                        {/*    onChange={handleChange('phase_end')}*/}
+                        {/*    className={classes.textField}*/}
+                        {/*    margin="normal"*/}
+                        {/*    variant="outlined"*/}
+                        {/*    SelectProps={{ multiple: false }}*/}
+                        {/*>*/}
+                        {/*    {state.phases && state.phases.map((item: string) => (*/}
+                        {/*        <MenuItem key={item} value={item}>{item}</MenuItem>*/}
+                        {/*    )) || []}*/}
+                        {/*</TextField>*/}
+                        {/*<TextField*/}
+                        {/*    select*/}
+                        {/*    id="select-treatment-type"*/}
+                        {/*    label="Тип обработки по назначению"*/}
+                        {/*    value={state.newTemplate ? state.newTemplate.type: null}*/}
+                        {/*    onChange={handleChange('type')}*/}
+                        {/*    className={classes.textField}*/}
+                        {/*    margin="normal"*/}
+                        {/*    variant="outlined"*/}
+                        {/*    SelectProps={{ multiple: false }}*/}
+                        {/*>*/}
+                        {/*    {state.treatment_types && state.treatment_types.map((item: string) => (*/}
+                        {/*        <MenuItem key={item} value={item}>{item}</MenuItem>*/}
+                        {/*    )) || []}*/}
+                        {/*</TextField>*/}
+                        {/*<TextField*/}
+                        {/*    select*/}
+                        {/*    id="select-treatment-apply-type"*/}
+                        {/*    label="Тип обработки по способу"*/}
+                        {/*    value={state.newTemplate ? state.newTemplate.apply_type: null}*/}
+                        {/*    onChange={handleChange('apply_type')}*/}
+                        {/*    className={classes.textField}*/}
+                        {/*    margin="normal"*/}
+                        {/*    variant="outlined"*/}
+                        {/*    SelectProps={{ multiple: false }}*/}
+                        {/*>*/}
+                        {/*    {state.treatment_apply_types && state.treatment_apply_types.map((item: string) => (*/}
+                        {/*        <MenuItem key={item} value={item}>{item}</MenuItem>*/}
+                        {/*    )) || []}*/}
+                        {/*</TextField>*/}
+                        {/*<TextField*/}
+                        {/*    select*/}
+                        {/*    id="select-contents"*/}
+                        {/*    label="Компоненты"*/}
+                        {/*    value={state.newTemplate && state.newTemplate.contents || []}*/}
+                        {/*    onChange={handleChange('contents')}*/}
+                        {/*    className={classes.textField}*/}
+                        {/*    margin="normal"*/}
+                        {/*    variant="outlined"*/}
+                        {/*    SelectProps={{ multiple: true }}*/}
+                        {/*>*/}
+                        {/*    {state.components.length && state.components.map((item: IComponent) => (*/}
+                        {/*        <MenuItem key={item.id} value={Number(item.id)}>{item.component_name}</MenuItem>*/}
+                        {/*    )) || []}*/}
+                        {/*</TextField>*/}
                         <Button
                             variant="contained"
                             color="primary"

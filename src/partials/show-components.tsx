@@ -5,15 +5,10 @@ import { API_URL } from "../config";
 import api from '../utils/api';
 import Grid from '@mui/material/Grid';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Container from '@mui/material/Container';
+import { Container, Typography, TextField } from '@mui/material';
 import { createStyles, makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles';
-
-interface IComponent {
-    id: number,
-    component_name: string,
-    substances: string[],
-}
+import { IComponent } from "src/utils/types";
 
 interface ISubstance {
     id: number,
@@ -28,6 +23,7 @@ interface IShowComponents {
     newSubstanceName: string,
     newComponentName: string,
     newComponentSubstances: number[],
+    newComponentDescription: string | null
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -85,13 +81,14 @@ const useStyles = makeStyles((theme: Theme) =>
 export const ShowComponents = () => {
     const classes = useStyles();
     const [state, setState] =  useState<IShowComponents>({
-        components: undefined,
+        components: [],
         showAddComponent: false,
         showAddSubstance: false,
-        substances: undefined,
+        substances: [],
         newSubstanceName: '',
         newComponentName: '',
         newComponentSubstances: [],
+        newComponentDescription: null,
     })
     const handleNewSubstance = async (event: ChangeEvent<HTMLInputElement>) => {
         setState({ ...state, newSubstanceName: event.target.value ? event.target.value.toLowerCase() : '' });
@@ -133,6 +130,9 @@ export const ShowComponents = () => {
             ...state,
             newComponentSubstances: Array.from(selectedOptions).map(o => Number(o.value))
         });
+    }
+    const handleNewComponentDescription = (e: ChangeEvent<HTMLInputElement>) => {
+        setState({ ...state, newComponentDescription: (e.target.value || '').toLowerCase() });
     }
     const showAddComponent =  () => {
         setState({
@@ -247,6 +247,15 @@ export const ShowComponents = () => {
                                     : 'no substances in state'
                                 }
                             </Select>
+                            <TextField
+                                id="component-description"
+                                label="Описание"
+                                value={state.newComponentDescription}
+                                onChange={handleNewComponentDescription}
+                                className={classes.textField}
+                                margin="normal"
+                                variant="outlined"
+                            />
                             <div className='whole-line'>
                                 <button type='submit' className='add-button'>Добавить</button>
                             </div>
@@ -279,6 +288,7 @@ export const ShowComponents = () => {
                                 onChange={handleNewSubstance}
                                 value={state.newSubstanceName}
                             />
+
                             <button  type='submit' className='add-button'>Добавить</button>
                         </form>
                         :
@@ -292,6 +302,7 @@ export const ShowComponents = () => {
                                     <div><p>'ID:'</p>{c.id}</div>
                                     <div><p>'Component name:'</p>{c.component_name}</div>
                                     <div><p>'Substances:'</p>{c.substances.join(', ')}</div>
+                                    <div><p>'Description:'</p>{c.description}</div>
                                 </div>
                                 ),
                             )
