@@ -4,26 +4,23 @@ import axios from "axios";
 import { API_URL } from "../config";
 import api from '../utils/api';
 import Grid from '@mui/material/Grid';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { Container, Typography, TextField } from '@mui/material';
 import { createStyles, makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles';
-import { IComponent } from "src/utils/types";
+import { IComponent, ISubstance } from "src/utils/types";
+import MenuItem from "@mui/material/MenuItem";
+import Button from "@mui/material/Button";
+import { sortBy } from '../utils/utils';
+import MuiTable from '../components/MuiTable';
 
-interface ISubstance {
-    id: number,
-    substance_name: string,
-}
 
 interface IShowComponents {
-    components: Array<IComponent> | undefined,
+    components: IComponent[],
     showAddComponent: boolean,
     showAddSubstance: boolean,
-    substances: Array<ISubstance> | undefined,
+    substances: ISubstance[],
     newSubstanceName: string,
-    newComponentName: string,
-    newComponentSubstances: number[],
-    newComponentDescription: string | null
+    newComponent: IComponent,
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -41,13 +38,22 @@ const useStyles = makeStyles((theme: Theme) =>
             padding: theme.spacing(0, 2),
             margin: theme.spacing(2, 0),
             border: '2px solid black',
-            alignItems: "flex-start",
+            // alignItems: "flex-start",
             // justifyContent: "space-between",
-            display: 'flex',
+            display: 'grid',
             flexDirection: 'column',
+            '& button': {
+                marginBottom: theme.spacing(2),
+                marginRight: theme.spacing(2),
+                // gridColumn: 'span 2',
+                display: 'inline-block',
+            },
+        },
+        header: {
+            padding: theme.spacing(2),
         },
         formContainer: {
-            padding: theme.spacing(0, 2),
+            padding: theme.spacing(1, 2),
             border: '2px solid blue',
         },
         itemsContainer: {
@@ -57,10 +63,21 @@ const useStyles = makeStyles((theme: Theme) =>
         textField: {
             width: 300,
             marginRight: theme.spacing(2),
+            marginLeft: theme.spacing(2),
+            border: '2px solid pink',
+        },
+        addButton: {
+            margin: theme.spacing(3, 3),
+            padding: theme.spacing(3, 3),
+            width: 300,
         },
         submit: {
-            marginTop: theme.spacing(2),
-            padding: theme.spacing(2, 3),
+            marginTop: theme.spacing(5),
+            padding: theme.spacing(3, 3),
+            width: 300,
+            textAlign: 'center',
+            alignSelf: 'center',
+            // justifySelf: 'center',
         },
         checkbox: {
             marginTop: theme.spacing(2),
@@ -80,28 +97,58 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export const ShowComponents = () => {
     const classes = useStyles();
+    const defaultComponent = {
+        component_name: '',
+        substances: [],
+        description: ''
+    };
     const [state, setState] =  useState<IShowComponents>({
         components: [],
         showAddComponent: false,
         showAddSubstance: false,
         substances: [],
         newSubstanceName: '',
-        newComponentName: '',
-        newComponentSubstances: [],
-        newComponentDescription: null,
+        newComponent: {
+            ...defaultComponent
+        }
     })
-    const handleNewSubstance = async (event: ChangeEvent<HTMLInputElement>) => {
-        setState({ ...state, newSubstanceName: event.target.value ? event.target.value.toLowerCase() : '' });
+    const handleChangeComponent = (name: keyof IComponent) => (event: ChangeEvent<HTMLInputElement>) => {
+        const { value } = event.target;
+        setState({
+            ...state,
+            newComponent: {
+                ...state.newComponent,
+                [name]: value,
+            } as IComponent
+        });
     }
-    const handleNewComponent = async (event: ChangeEvent<HTMLInputElement>) => {
-        setState({ ...state, newComponentName: event.target.value ? event.target.value.toLowerCase() : '' });
-    }
-    // const handleNewComponentSubstances = async (event: ChangeEvent<HTMLInputElement>) => {
-    //     setState({ ...state, newComponentSubstances: event.target.value ? event.target.value.toLowerCase() : '' });
-    // }
-    const addComponent = (event: FormEvent) => {
+    const addComponent = async (event: FormEvent) => {
         event.preventDefault();
-        console.info('add comp:', state.newComponentName, state.newComponentSubstances)
+        console.info('add comp:', state.newComponent)
+        if (state.newComponent.component_name === '') {
+            window.alert('не введено имя компонента')
+            return
+        } else {
+            try {
+                const res = await axios.post(
+                    `${API_URL}/add-component`,
+                    {
+                        component_name: state.newComponent.component_name.toLowerCase(),
+                        description: state.newComponent.description.toLowerCase(),
+                        substances: state.newComponent.substances,
+                    }
+                );
+                if (res.data.error) {
+                    window.alert(res.data.error)
+                } else {
+                    getComponents()
+                    window.alert('success')
+                }
+            } catch (e) {
+                console.info(143, e);
+            }
+
+        }
     }
     const addSubstance = async (event: FormEvent) => {
         event.preventDefault();
@@ -124,189 +171,175 @@ export const ShowComponents = () => {
 
         }
     }
-    const handleNewComponentSubstances = (e: SelectChangeEvent<number[]> | ChangeEvent) => {
-        const { selectedOptions } = e.target as HTMLSelectElement;
-        setState({
-            ...state,
-            newComponentSubstances: Array.from(selectedOptions).map(o => Number(o.value))
-        });
-    }
-    const handleNewComponentDescription = (e: ChangeEvent<HTMLInputElement>) => {
-        setState({ ...state, newComponentDescription: (e.target.value || '').toLowerCase() });
-    }
-    const showAddComponent =  () => {
-        setState({
-            ...state,
-            showAddComponent: !state.showAddComponent,
-            showAddSubstance: false,
-        });
-        console.info('show comp')
 
-    }
-    const showAddSubstance = () => {
-        setState({
-            ...state,
-            showAddSubstance: !state.showAddSubstance
-        });
-        console.info('show comp')
-    }
     const getSubstances = async () => {
         const substances = await api('get', 'show-substances');
         setState({
             ...state,
-            substances,
+            substances: sortBy(substances, 'substance_name'),
             newSubstanceName: '',
         })
     }
+
     const getComponents = async () => {
         const components = await api('get', 'show-components');
         setState({
             ...state,
             components,
+            newComponent: { ...defaultComponent }
         })
     }
+
     const getInitialData = async () => {
         const substances = await api('get', 'show-substances');
         const components = await api('get', 'show-components');
         setState({
             ...state,
-            substances,
+            substances: sortBy(substances, 'substance_name'),
             components,
             newSubstanceName: '',
         })
     }
-
     useEffect(() => {
         getInitialData();
     }, [])
+
     return (
         <div className={classes.root}>
             <Container>
                 <Grid container className={classes.formContainer}>
                     {state.showAddComponent ?
-                        <form
+                        <Grid
+                            component='form'
+                            className={classes.form}
                             name='Форма для добавления нового компонента'
                             id='CompAddForm'
-                            className={classes.form}
                             onSubmit={addComponent}
                             autoComplete="on"
                         >
-                            <h2 className='whole-line'>
-                                Добавить новый компонент
-                            </h2>
-                            <label className='whole-line'>
-                                Название препарата
-                            </label>
-                            <input
-                                type='text'
-                                placeholder='Название препарата'
-                                name='name'
+                            <Typography component="span" variant="h5" className={classes.header}>Добавить новый компонент</Typography>
+                            <TextField
+                                id="component-name"
+                                label="Название препарата"
+                                value={state.newComponent.component_name}
+                                onChange={handleChangeComponent('component_name')}
+                                className={classes.textField}
+                                margin="normal"
+                                variant="outlined"
                                 required
-                                autoComplete="on"
-                                className='whole-line add-input'
-                                onChange={handleNewComponent}
                             />
-                            <label className='whole-line'>Действующие вещества</label>
-                            {/*<input*/}
-                            {/*    type='text'*/}
-                            {/*    placeholder='Выбрать из имеющихся'*/}
-                            {/*    name='substances'*/}
-                            {/*    autoComplete="on"*/}
-                            {/*    className='whole-line add-input'*/}
-                            {/*    // onChange={handleNewComponentSubstances}*/}
-                            {/*    // value={state.newComponentSubstances}*/}
-                            {/*/>*/}
-                            {/*<Select*/}
-                            {/*    multiple*/}
-                            {/*    native*/}
-                            {/*    disableUnderline*/}
-                            {/*    value={state.selectedSavedRequest ? [state.selectedSavedRequest] : []}*/}
-                            {/*    onChange={handleChangeSavedRequest}*/}
-                            {/*    inputProps={{*/}
-                            {/*        id: 'select-multiple-native',*/}
-                            {/*    }}*/}
-                            {/*>*/}
-                            <Select
+                            <TextField
+                                select
+                                id="component-substances"
+                                label="Действующие вещества"
+                                value={state.newComponent.substances}
+                                onChange={handleChangeComponent('substances')}
+                                className={classes.textField}
+                                margin="normal"
+                                variant="outlined"
+                                SelectProps={{ multiple: true }}
                                 required
-                                onChange={handleNewComponentSubstances}
-                                multiple
-                                native
-                                value={state.newComponentSubstances || []}
                             >
-                                {state.substances
-                                    ? state.substances
-                                        .sort((a, b) => (
-                                            a.substance_name > b.substance_name ?
-                                                1 :
-                                                b.substance_name > a.substance_name ?
-                                                -1 : 0
-                                            ))
-                                        .map(item => (
-                                        <option key={item.id} value={Number(item.id)}>{item.substance_name}</option>
-                                    ))
-                                    : 'no substances in state'
-                                }
-                            </Select>
+                                {state.substances.length && state.substances.map((item: ISubstance) => (
+                                    <MenuItem key={item.id} value={item.id}>{item.substance_name}</MenuItem>
+                                ))}
+                            </TextField>
                             <TextField
                                 id="component-description"
                                 label="Описание"
-                                value={state.newComponentDescription}
-                                onChange={handleNewComponentDescription}
+                                value={state.newComponent.description}
+                                onChange={handleChangeComponent('description')}
                                 className={classes.textField}
                                 margin="normal"
                                 variant="outlined"
                             />
-                            <div className='whole-line'>
-                                <button type='submit' className='add-button'>Добавить</button>
-                            </div>
-                        </form>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                type="submit"
+                                // disabled={state.isLoading}
+                                className={classes.submit}
+                            >
+                                {/*{state.isLoading ? <CircularProgress size={14} color="secondary" /> : 'Отправить'}*/}
+                                Добавить
+                            </Button>
+                        </Grid>
                         :
-                        <button onClick={showAddComponent}>Добавить компонент</button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => setState({
+                                ...state,
+                                showAddComponent: !state.showAddComponent,
+                                showAddSubstance: false,
+                            })}
+                            // disabled={state.isLoading}
+                            className={classes.addButton}
+                        >
+                            {/*{state.isLoading ? <CircularProgress size={14} color="secondary" /> : 'Отправить'}*/}
+                            Добавить компонент
+                        </Button>
                     }
                 </Grid>
                 <Grid container className={classes.formContainer}>
                     {state.showAddSubstance ?
-                        <form
+                        <Grid
+                            component='form'
+                            className={classes.form}
                             name='Форма для добавления нового действующего вещества'
                             id='SubAddForm'
-                            className={classes.form}
                             onSubmit={addSubstance}
+                            autoComplete="on"
                         >
-                            <h2 className='whole-line'>
-                                Добавить действующее вещество
-                            </h2>
-                            <label className='whole-line'>
-                                Название вещества
-                            </label>
-                            <input
-                                type='text'
-                                placeholder='Добавить новое'
-                                name='name'
-                                required
-                                // autoComplete="on"
-                                className='whole-line add-input'
-                                onChange={handleNewSubstance}
+                            <Typography component="span" variant="h5" className={classes.header}>Добавить действующее вещество</Typography>
+                            <TextField
+                                id="substance-name"
+                                label="Название вещества"
                                 value={state.newSubstanceName}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => setState({ ...state, newSubstanceName: e.target.value })}
+                                className={classes.textField}
+                                margin="normal"
+                                variant="outlined"
+                                required
                             />
-
-                            <button  type='submit' className='add-button'>Добавить</button>
-                        </form>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                type="submit"
+                                // disabled={state.isLoading}
+                                className={classes.submit}
+                            >
+                                {/*{state.isLoading ? <CircularProgress size={14} color="secondary" /> : 'Отправить'}*/}
+                                Добавить
+                            </Button>
+                        </Grid>
                         :
-                        <button onClick={showAddSubstance}>Добавить действующее вещество</button>
+                        // <button onClick={showAddSubstance}>Добавить действующее вещество</button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => setState({
+                                ...state,
+                                showAddSubstance: !state.showAddSubstance
+                            })}
+                            // disabled={state.isLoading}
+                            className={classes.addButton}
+                        >
+                        {/*{state.isLoading ? <CircularProgress size={14} color="secondary" /> : 'Отправить'}*/}
+                        Добавить действующее вещество
+                        </Button>
                     }
                 </Grid>
                 <Grid container className={classes.itemsContainer}>
-                    {state.components && state.components.length ?
-                            state.components.map((c: IComponent) => (
-                                <div className='component' key={c.id}>
-                                    <div><p>'ID:'</p>{c.id}</div>
-                                    <div><p>'Component name:'</p>{c.component_name}</div>
-                                    <div><p>'Substances:'</p>{c.substances.join(', ')}</div>
-                                    <div><p>'Description:'</p>{c.description}</div>
-                                </div>
-                                ),
-                            )
-                        : 'no components found'}
+                    <MuiTable
+                        data={state.components}
+                        fields={{
+                            'ID': 'id',
+                            'Название компонента': 'component_name',
+                            'Состав': 'substances',
+                            'Описание': 'description'
+                        }}
+                    />
                 </Grid>
             </Container>
         </div>
