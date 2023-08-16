@@ -2,36 +2,14 @@ import '../App.css';
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react'
 import axios from "axios";
 import { API_URL } from "../config";
-import Grid from '@mui/material/Grid';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Button from '@mui/material/Button';
-import { TextField, Typography } from '@mui/material';
-import MenuItem from '@mui/material/MenuItem';
-import Container from '@mui/material/Container';
+import { Grid, Button, TextField, Typography, MenuItem } from '@mui/material';
 import { createStyles, makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles';
 import api from "src/utils/api";
-import { IComponent } from "src/utils/types";
+import { IComponent, ITemplate } from "src/utils/types";
 import MuiTable from "src/components/MuiTable";
 import { sortBy } from "src/utils/utils";
 
-
-interface ITemplate {
-    id?: number,
-    template_name: string,
-    plant_id?: number,
-    plant_name?: string,
-    contents: number[],
-    phase_start: string,
-    phase_end: string,
-    frequency: number | null,
-    treatment_gap: number | null,
-    special_condition: string,
-    apply_type: string,
-    type: string,
-    dosage: string,
-    volume: string,
-}
 
 interface IPlant {
     id: number,
@@ -59,12 +37,14 @@ interface IShowTemplates {
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
-            margin: theme.spacing(0),
-            minHeight: 'calc(100vh - 120px)',
-            width: '100%',
+            margin: theme.spacing(1, 1),
+            padding: theme.spacing(1, 1),
+            // minHeight: 'calc(100vh - 120px)',
+            maxWidth: 'calc(100vw - 20px)',
             backgroundColor: theme.palette.background.default,
             position: 'relative',
-            justify: "center"
+            justify: "center",
+            border: '2px solid orange',
             // backgroundColor: "pink",
         },
         form: {
@@ -177,7 +157,7 @@ const ShowTemplates = () => {
             ...state,
             templates,
             plants: sortBy(plants, 'plant_name'),
-            phases,
+            phases: phases.sort(),
             treatment_types,
             treatment_apply_types,
             components
@@ -241,7 +221,7 @@ const ShowTemplates = () => {
     }
     return (
         <div className={classes.root}>
-            <Container>
+            <Grid item container xs={12}>
                 <Grid className={classes.formContainer}>
                     {state.showAddTemplate ?
                         <Grid className={classes.form} component="form" onSubmit={addTemplate}>
@@ -254,6 +234,7 @@ const ShowTemplates = () => {
                                 className={classes.textField}
                                 margin="normal"
                                 variant="outlined"
+                                required
                             />
                             <TextField
                                 select
@@ -265,6 +246,7 @@ const ShowTemplates = () => {
                                 margin="normal"
                                 variant="outlined"
                                 SelectProps={{ multiple: false }}
+                                required
                             >
                                 {state.plants && state.plants.map((item: IPlant) => (
                                     <MenuItem key={item.id} value={item.id}>{item.plant_name}</MenuItem>
@@ -310,6 +292,7 @@ const ShowTemplates = () => {
                                 margin="normal"
                                 variant="outlined"
                                 SelectProps={{ multiple: false }}
+                                required
                             >
                                 {state.treatment_types && state.treatment_types.map((item: string) => (
                                     <MenuItem key={item} value={item}>{item}</MenuItem>
@@ -325,6 +308,7 @@ const ShowTemplates = () => {
                                 margin="normal"
                                 variant="outlined"
                                 SelectProps={{ multiple: false }}
+                                required
                             >
                                 {state.treatment_apply_types && state.treatment_apply_types.map((item: string) => (
                                     <MenuItem key={item} value={item}>{item}</MenuItem>
@@ -416,18 +400,6 @@ const ShowTemplates = () => {
                     }
                 </Grid>
                 <Grid container className={classes.itemsContainer}>
-                    {/*{state.templates && state.templates.length ?*/}
-                    {/*    state.templates.map((c: ITemplate) => (*/}
-                    {/*        <div className='component' key={c.id}>*/}
-                    {/*            <div><p>'ID:'</p>{c.id}</div>*/}
-                    {/*            <div><p>'Name:'</p>{c.template_name}</div>*/}
-                    {/*            <div><p>'Plant:'</p>{c.plant_name}</div>*/}
-                    {/*            <div><p>'Contents:'</p>{c.contents}</div>*/}
-                    {/*            <div><p>'Phase begin:'</p>{c.phase_start}</div>*/}
-                    {/*            <div><p>'Phase end:'</p>{c.phase_end}</div>*/}
-                    {/*        </div>*/}
-                    {/*        ),*/}
-                    {/*    ) : 'no templates found'}*/}
                     {state.templates && state.templates.length ?
                         <MuiTable
                             data={state.templates}
@@ -435,14 +407,21 @@ const ShowTemplates = () => {
                                 'ID': 'id',
                                 'Название шаблона': 'template_name',
                                 'Растение': 'plant_name',
+                                'Назначение': 'type',
+                                'Способ': 'apply_type',
                                 'Состав': 'contents',
                                 'Фаза начала': 'phase_start',
-                                'Фаза конца': 'phase_end'
+                                'Фаза конца': 'phase_end',
+                                'Кратность': 'frequency',
+                                'Промежуток между': 'treatment_gap',
+                                'Дозировка': 'dosage',
+                                'Объём': 'volume',
+                                'Спец.условие': 'special_condition'
                             }}
                         />
                         : 'no templates found'}
                 </Grid>
-            </Container>
+            </Grid>
         </div>
     )
 }
