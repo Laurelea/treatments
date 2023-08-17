@@ -1,7 +1,5 @@
 import '../App.css';
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react'
-import axios from "axios";
-import { API_URL } from "../config";
 import { Grid, Button, TextField, Typography, MenuItem } from '@mui/material';
 import { createStyles, makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles';
@@ -189,15 +187,12 @@ const ShowTemplates = () => {
             return
         } else {
             try {
-                const res = await axios.post(
-                    `${API_URL}/add-template`,
-                    {
-                        ...state.newTemplate,
-                        template_name: state.newTemplate.template_name.toLowerCase(),
-                    }
-                );
-                if (res.data.error) {
-                    window.alert(res.data.error)
+                const res = await api('post', 'add-template', {
+                    ...state.newTemplate,
+                    template_name: state.newTemplate.template_name.toLowerCase(),
+                })
+                if (!res.success) {
+                    window.alert(res.message)
                 } else {
                     getTemplates()
                     window.alert('success')

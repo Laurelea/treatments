@@ -1,7 +1,5 @@
 import '../App.css';
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
-import axios from "axios";
-import { API_URL } from "../config";
 import MuiTable from "src/components/MuiTable";
 import api from "src/utils/api";
 import { createStyles, makeStyles } from "@mui/styles";
@@ -220,14 +218,11 @@ export const ShowTreatments =  () => {
             return
         } else {
             try {
-                const res = await axios.post(
-                    `${API_URL}/add-treatment`,
-                    {
-                        ...state.newTreatment,
-                    }
-                );
-                if (res.data.error) {
-                    window.alert(res.data.error)
+                const res = await api('post', 'add-treatment', {
+                    ...state.newTreatment,
+                })
+                if (!res.success) {
+                    window.alert(res.message)
                 } else {
                     getInitialData()
                     window.alert('success')

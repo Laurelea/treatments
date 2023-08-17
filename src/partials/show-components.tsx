@@ -1,7 +1,5 @@
 import '../App.css';
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
-import axios from "axios";
-import { API_URL } from "../config";
 import api from '../utils/api';
 import Grid from '@mui/material/Grid';
 import { Container, Typography, TextField } from '@mui/material';
@@ -130,16 +128,17 @@ export const ShowComponents = () => {
             return
         } else {
             try {
-                const res = await axios.post(
-                    `${API_URL}/add-component`,
+                const res = await api(
+                    'post',
+                    'add-component',
                     {
                         component_name: state.newComponent.component_name.toLowerCase(),
                         description: state.newComponent.description.toLowerCase(),
-                        substances: state.newComponent.substances,
-                    }
-                );
-                if (res.data.error) {
-                    window.alert(res.data.error)
+                        substances: state.newComponent.substances
+                    })
+                console.info(146, res)
+                if (!res.success) {
+                    window.alert(res.message)
                 } else {
                     getComponents()
                     window.alert('success')
@@ -158,9 +157,14 @@ export const ShowComponents = () => {
             return
         } else {
             try {
-                const res = await axios.post(`${API_URL}/add-substance`, { substance_name: state.newSubstanceName });
-                if (res.data.error) {
-                    window.alert(res.data.error)
+                const res = await api(
+                    'post',
+                    'add-substance',
+                    {
+                        substance_name: state.newSubstanceName
+                    })
+                if (!res.success) {
+                    window.alert(res.message)
                 } else {
                     getSubstances()
                     window.alert('success')
